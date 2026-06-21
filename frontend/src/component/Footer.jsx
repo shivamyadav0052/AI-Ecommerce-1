@@ -15,11 +15,11 @@ function Footer() {
       <div className='w-[100%] bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white pt-16 pb-8'>
         <div className='max-w-7xl mx-auto px-6 md:px-12'>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
-            
+
             {/* Company Info */}
             <div className='space-y-6'>
               <div className='flex items-center gap-3'>
-                <img src={logo} alt="" className='w-10 h-10 rounded-lg shadow-lg'/>
+                <img src={logo} alt="" className='w-10 h-10 rounded-lg shadow-lg' />
                 <h2 className='text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'>OneCart</h2>
               </div>
               <p className='text-gray-300 leading-relaxed'>
@@ -27,19 +27,19 @@ function Footer() {
               </p>
               <div className='flex space-x-4'>
                 <a href="https://www.facebook.com/shivam.pathak.388277" target="_blank" rel="noopener noreferrer">
-                  <FaFacebookF className='w-6 h-6 text-gray-400 hover:text-blue-500 cursor-pointer transition-all duration-300 hover:scale-110'/>
+                  <FaFacebookF className='w-6 h-6 text-gray-400 hover:text-blue-500 cursor-pointer transition-all duration-300 hover:scale-110' />
                 </a>
                 <a href="https://x.com/ShivamPath93725" target="_blank" rel="noopener noreferrer">
-                  <FaTwitter className='w-6 h-6 text-gray-400 hover:text-blue-400 cursor-pointer transition-all duration-300 hover:scale-110'/>
+                  <FaTwitter className='w-6 h-6 text-gray-400 hover:text-blue-400 cursor-pointer transition-all duration-300 hover:scale-110' />
                 </a>
                 <a href="https://www.instagram.com/shivampathak8106/" target="_blank" rel="noopener noreferrer">
-                  <FaInstagram className='w-6 h-6 text-gray-400 hover:text-pink-500 cursor-pointer transition-all duration-300 hover:scale-110'/>
+                  <FaInstagram className='w-6 h-6 text-gray-400 hover:text-pink-500 cursor-pointer transition-all duration-300 hover:scale-110' />
                 </a>
                 <a href="https://www.linkedin.com/in/shivam9076/" target="_blank" rel="noopener noreferrer">
-                  <FaLinkedinIn className='w-6 h-6 text-gray-400 hover:text-blue-600 cursor-pointer transition-all duration-300 hover:scale-110'/>
+                  <FaLinkedinIn className='w-6 h-6 text-gray-400 hover:text-blue-600 cursor-pointer transition-all duration-300 hover:scale-110' />
                 </a>
                 <a href="https://youtube.com/@onecart" target="_blank" rel="noopener noreferrer">
-                  <FaYoutube className='w-6 h-6 text-gray-400 hover:text-red-500 cursor-pointer transition-all duration-300 hover:scale-110'/>
+                  <FaYoutube className='w-6 h-6 text-gray-400 hover:text-red-500 cursor-pointer transition-all duration-300 hover:scale-110' />
                 </a>
               </div>
             </div>
@@ -73,30 +73,30 @@ function Footer() {
               <h3 className='text-xl font-semibold text-cyan-400'>Get In Touch</h3>
               <div className='space-y-4'>
                 <div className='flex items-center gap-3'>
-                  <MdPhone className='w-5 h-5 text-cyan-400'/>
+                  <MdPhone className='w-5 h-5 text-cyan-400' />
                   <a href="tel:+91-9076985876" className='text-gray-300 hover:text-white transition-colors'>+91-9076985876</a>
                 </div>
                 <div className='flex items-center gap-3'>
-                  <MdEmail className='w-5 h-5 text-cyan-400'/>
-                  <a href="mailto:shivampathak99771@gmail.com" className='text-gray-300 hover:text-white transition-colors'>shivampathak99771@gmail.com</a>
+                  <MdEmail className='w-5 h-5 text-cyan-400' />
+                  <a href="mailto:shivampathak99771@gmail.com" className='text-gray-300 hover:text-white transition-colors'>altafmohd8663@gmail.com</a>
                 </div>
                 <div className='flex items-center gap-3'>
-                  <FaWhatsapp className='w-5 h-5 text-cyan-400'/>
+                  <FaWhatsapp className='w-5 h-5 text-cyan-400' />
                   <a href="https://wa.me/9076985876" target="_blank" rel="noopener noreferrer" className='text-gray-300 hover:text-green-400 transition-colors'>WhatsApp Us</a>
                 </div>
                 <div className='flex items-center gap-3'>
-                  <MdLocationOn className='w-5 h-5 text-cyan-400'/>
+                  <MdLocationOn className='w-5 h-5 text-cyan-400' />
                   <span className='text-gray-300'>New Delhi, India</span>
                 </div>
               </div>
-              
+
               {/* Newsletter */}
               <div className='mt-6'>
                 <h4 className='text-lg font-medium mb-3'>Subscribe Newsletter</h4>
                 <div className='flex'>
-                  <input 
-                    type="email" 
-                    placeholder="Enter your email" 
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
                     className='flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:border-cyan-400 transition-colors'
                   />
                   <button className='px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-r-lg hover:from-cyan-600 hover:to-blue-600 transition-all duration-300'>
@@ -127,11 +127,11 @@ function Footer() {
       </div>
 
       {/* Scroll to Top Button */}
-      <button 
+      <button
         onClick={scrollToTop}
         className='fixed bottom-20 md:bottom-8 right-6 w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-50'
       >
-        <IoMdArrowRoundUp className='w-6 h-6 mx-auto'/>
+        <IoMdArrowRoundUp className='w-6 h-6 mx-auto' />
       </button>
     </div>
   )

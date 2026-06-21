@@ -1,101 +1,135 @@
 import Order from "../model/orderModel.js";
 import User from "../model/userModel.js";
-import razorpay from 'razorpay'
+import axios from 'axios'
+import crypto from 'crypto'
 import dotenv from 'dotenv'
 dotenv.config()
 const currency = 'inr'
-const razorpayInstance = new razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_RFrv5JmaI7ffnN",
-    key_secret: process.env.RAZORPAY_KEY_SECRET || "VMaDy49Z72ILpGhd2gnN4AYh"
-})
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID || "rzp_test_RFrv5JmaI7ffnN"
+const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || "VMaDy49Z72ILpGhd2gnN4AYh"
+const razorpayApiUrl = 'https://api.razorpay.com/v1'
 
 // for User
-export const placeOrder = async (req,res) => {
+export const placeOrder = async (req, res) => {
 
-     try {
-         const {items , amount , address} = req.body;
-         const userId = req.userId;
-         const orderData = {
-            items,
-            amount,
-            userId,
-            address,
-            paymentMethod:'COD',
-            payment:false,
-            date: Date.now()
-         }
-
-         const newOrder = new Order(orderData)
-         await newOrder.save()
-
-         await User.findByIdAndUpdate(userId,{cartData:{}})
-
-         return res.status(201).json({message:'Order Place'})
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({message:'Order Place error'})
-    }
-    
-}
-
-
-export const placeOrderRazorpay = async (req,res) => {
     try {
-        
-         const {items , amount , address} = req.body;
-         const userId = req.userId;
-         const orderData = {
+        const { items, amount, address } = req.body;
+        const userId = req.userId;
+        const orderData = {
             items,
             amount,
             userId,
             address,
-            paymentMethod:'Razorpay',
-            payment:false,
+            paymentMethod: 'COD',
+            payment: false,
             date: Date.now()
-         }
+        }
 
-         const newOrder = new Order(orderData)
-         await newOrder.save()
+        const newOrder = new Order(orderData)
+        await newOrder.save()
 
-         const options = {
-            amount:amount * 100,
-            currency: currency.toUpperCase(),
-            receipt : newOrder._id.toString()
-         }
-         await razorpayInstance.orders.create(options, (error,order)=>{
-            if(error) {
-                console.log(error)
-                return res.status(500).json(error)
-            }
-            res.status(200).json(order)
-         })
+        await User.findByIdAndUpdate(userId, { cartData: {} })
+
+        return res.status(201).json({ message: 'Order Place' })
     } catch (error) {
         console.log(error)
-        res.status(500).json({message:error.message
-            })
+        res.status(500).json({ message: 'Order Place error' })
+    }
+
+}
+
+
+export const placeOrderRazorpay = async (req, res) => {
+    try {
+
+        const { items, amount, address } = req.body;
+        const userId = req.userId;
+        const orderData = {
+            items,
+            amount,
+            userId,
+            address,
+            paymentMethod: 'Razorpay',
+            payment: false,
+            date: Date.now()
+        }
+
+        const newOrder = new Order(orderData)
+        await newOrder.save()
+
+        const orderAmount = Math.round(Number(amount) * 100)
+        if (!orderAmount || Number.isNaN(orderAmount)) {
+            return res.status(400).json({ message: 'Invalid order amount' })
+        }
+
+        const { data } = await axios.post(
+            `${razorpayApiUrl}/orders`,
+            {
+                amount: orderAmount,
+                currency: currency.toUpperCase(),
+                receipt: newOrder._id.toString()
+            },
+            {
+                auth: {
+                    username: razorpayKeyId,
+                    password: razorpayKeySecret
+                },
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        )
+
+        return res.status(200).json(data)
+    } catch (error) {
+        const errorMessage = error.response?.data?.error?.description || error.response?.data?.error?.message || error.message
+        console.log('Razorpay order error:', error.response?.data || errorMessage)
+        return res.status(error.response?.status || 500).json({
+            message: errorMessage
+        })
     }
 }
 
 
-export const verifyRazorpay = async (req,res) =>{
+export const verifyRazorpay = async (req, res) => {
     try {
         const userId = req.userId
-        const {razorpay_order_id} = req.body
-        const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
-        if(orderInfo.status === 'paid'){
-            await Order.findByIdAndUpdate(orderInfo.receipt,{payment:true});
-            await User.findByIdAndUpdate(userId , {cartData:{}})
-            res.status(200).json({message:'Payment Successful'
-            })
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
+
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+            return res.status(400).json({ message: 'Missing Razorpay payment details' })
         }
-        else{
-            res.json({message:'Payment Failed'
-            })
+
+        const generatedSignature = crypto
+            .createHmac('sha256', razorpayKeySecret)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest('hex')
+
+        if (generatedSignature !== razorpay_signature) {
+            return res.status(400).json({ message: 'Invalid payment signature' })
         }
+
+        const { data: orderInfo } = await axios.get(
+            `${razorpayApiUrl}/orders/${razorpay_order_id}`,
+            {
+                auth: {
+                    username: razorpayKeyId,
+                    password: razorpayKeySecret
+                }
+            }
+        )
+
+        await Order.findByIdAndUpdate(orderInfo.receipt, { payment: true })
+        await User.findByIdAndUpdate(userId, { cartData: {} })
+        return res.status(200).json({
+            message: 'Payment Successful'
+        })
     } catch (error) {
-        console.log(error)
-         res.status(500).json({message:error.message
-            })
+        const errorMessage = error.response?.data?.error?.description || error.response?.data?.error?.message || error.message
+        console.log('Razorpay verification error:', error.response?.data || errorMessage)
+        return res.status(error.response?.status || 500).json({
+            message: errorMessage
+        })
     }
 }
 
@@ -104,16 +138,16 @@ export const verifyRazorpay = async (req,res) =>{
 
 
 
-export const userOrders = async (req,res) => {
-      try {
+export const userOrders = async (req, res) => {
+    try {
         const userId = req.userId;
-        const orders = await Order.find({userId})
+        const orders = await Order.find({ userId })
         return res.status(200).json(orders)
     } catch (error) {
         console.log(error)
-        return res.status(500).json({message:"userOrders error"})
+        return res.status(500).json({ message: "userOrders error" })
     }
-    
+
 }
 
 
@@ -123,28 +157,29 @@ export const userOrders = async (req,res) => {
 
 
 
-    
-export const allOrders = async (req,res) => {
+
+export const allOrders = async (req, res) => {
     try {
         const orders = await Order.find({})
         res.status(200).json(orders)
     } catch (error) {
         console.log(error)
-        return res.status(500).json({message:"adminAllOrders error"})
-        
-    }
-    
-}
-    
-export const updateStatus = async (req,res) => {
-    
-try {
-    const {orderId , status} = req.body
+        return res.status(500).json({ message: "adminAllOrders error" })
 
-    await Order.findByIdAndUpdate(orderId , { status })
-    return res.status(201).json({message:'Status Updated'})
-} catch (error) {
-     return res.status(500).json({message:error.message
-            })
+    }
+
 }
+
+export const updateStatus = async (req, res) => {
+
+    try {
+        const { orderId, status } = req.body
+
+        await Order.findByIdAndUpdate(orderId, { status })
+        return res.status(201).json({ message: 'Status Updated' })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
 }

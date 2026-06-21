@@ -1,9 +1,13 @@
 import User from "../model/userModel.js";
 
 
-export const addToCart = async (req,res) => {
-    try {
-    const {itemId, size } = req.body;
+export const addToCart = async (req, res) => {
+  try {
+    const { itemId, size } = req.body;
+
+    if (!itemId || !size) {
+      return res.status(400).json({ message: "itemId and size are required" });
+    }
 
     const userData = await User.findById(req.userId);
 
@@ -35,41 +39,68 @@ export const addToCart = async (req,res) => {
   }
 
 
-    
+
 }
 
 
-export const UpdateCart = async (req,res) => {
-     try {
-         const {itemId , size , quantity } = req.body
-         const userData = await User.findById(req.userId)
-         let cartData = await userData.cartData;
+export const UpdateCart = async (req, res) => {
+  try {
+    const { itemId, size, quantity } = req.body
 
-         cartData[itemId][size] = quantity
-
-          await User.findByIdAndUpdate(req.userId,{cartData})
-
-    return res.status(201).json({message:"cart updated"})
-
-
-
-
-    } catch (error) {
-         console.log(error)
-    return res.status(500).json({message:"updateCart error"})
+    if (!itemId || !size || typeof quantity !== "number" || quantity < 0) {
+      return res.status(400).json({ message: "itemId, size and valid quantity are required" })
     }
-    
-    
 
-    
+    const userData = await User.findById(req.userId)
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    let cartData = userData.cartData || {};
+
+    if (quantity === 0) {
+      if (cartData[itemId] && cartData[itemId][size] !== undefined) {
+        delete cartData[itemId][size]
+        if (Object.keys(cartData[itemId]).length === 0) {
+          delete cartData[itemId]
+        }
+      }
+    } else {
+      if (!cartData[itemId]) {
+        cartData[itemId] = {}
+      }
+      cartData[itemId][size] = quantity
+    }
+
+    await User.findByIdAndUpdate(req.userId, { cartData })
+
+    return res.status(201).json({ message: "cart updated" })
+
+
+
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: "updateCart error" })
+  }
+
+
+
+
 }
 
-export const getUserCart = async (req,res) => {
+export const getUserCart = async (req, res) => {
 
-     try {
-         
-         const userData = await User.findById(req.userId)
-         let cartData = await userData.cartData;
+  try {
+
+    const userData = await User.findById(req.userId)
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    let cartData = userData.cartData || {};
 
 
     return res.status(200).json(cartData)
@@ -77,10 +108,10 @@ export const getUserCart = async (req,res) => {
 
 
 
-    } catch (error) {
-         console.log(error)
-    return res.status(500).json({message:"getUserCart error"})
-    }
-    
-    
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: "getUserCart error" })
+  }
+
+
 }
